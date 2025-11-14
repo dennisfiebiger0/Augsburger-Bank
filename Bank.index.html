@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Augsburger Bank · Online-Banking</title>
+<style>
+  :root{
+    --bg:#f6f9fc; --ink:#0f2337; --muted:#6b7a88;
+    --brand:#0a5aa6; --brand2:#0e7bd6; --line:#e6eef6;
+    --ok:#117a37; --err:#b91c1c; --warn:#946100;
+    --card:#ffffff; --shadow:0 10px 30px rgba(9,35,70,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    color:var(--ink);
+    background:linear-gradient(180deg,#eef6ff 0%,#ffffff 22%,#f9fbff 100%);
+  }
+  .container{max-width:1120px;margin:0 auto;padding:20px}
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:900;letter-spacing:.2px}
+  .logo{
+    width:44px;height:44px;border-radius:12px;
+    background:linear-gradient(135deg,var(--brand),var(--brand2));
+    display:grid;place-items:center;color:#fff;box-shadow:var(--shadow);font-weight:900;
+  }
+  nav a{color:var(--muted);text-decoration:none;margin:0 10px;font-weight:700}
+  nav a.active{color:var(--brand)}
+  .hero{
+    background:linear-gradient(120deg, rgba(10,90,166,.10), rgba(14,123,214,.08));
+    border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow)
+  }
+  .hero h1{font-size:22px;margin:0 0 6px}
+  .hero p{margin:0;color:var(--muted)}
+
+  .card{
+    background:var(--card);border:1px solid var(--line);
+    border-radius:14px;box-shadow:var(--shadow);padding:16px;margin-top:16px;
+  }
+  .steps{display:flex;gap:8px;margin-bottom:10px}
+  .step{
+    flex:1;padding:8px 10px;border-radius:10px;
+    background:#f2f7ff;color:#2a4d6a;font-weight:800;text-align:center
+  }
+  .step.active{background:linear-gradient(90deg,var(--brand),var(--brand2));color:#fff}
+
+  label{display:block;margin:10px 0 6px;font-weight:800}
+  input{
+    width:100%;padding:12px;border:1px solid var(--line);
+    border-radius:10px;font-size:16px
+  }
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .btn{
+    appearance:none;border:none;
+    background:linear-gradient(90deg,var(--brand),var(--brand2));
+    color:#fff;padding:12px 14px;border-radius:10px;
+    font-weight:800;cursor:pointer
+  }
+  .btn.secondary{background:#eef6ff;color:var(--brand);border:1px solid #d6e9ff}
+  .hint{color:var(--muted);font-size:14px}
+  .status{margin-top:10px;font-weight:800}
+  .ok{color:var(--ok)}
+  .err{color:var(--err)}
+  .hide{display:none}
+
+  .table{width:100%;border-collapse:collapse}
+  .table th,.table td{border:1px solid var(--line);padding:10px;text-align:left}
+
+  .banner{
+    border-left:4px solid var(--brand);
+    padding:10px 12px;background:#f3f8ff;border-radius:10px
+  }
+
+  /* QR-TAN Modal */
+  .modal{
+    position:fixed;inset:0;background:rgba(15,34,51,.45);
+    display:none;align-items:center;justify-content:center;
+    padding:20px;z-index:50
+  }
+  .modal.show{display:flex}
+  .modal-card{
+    background:var(--card);border:1px solid var(--line);
+    border-radius:14px;box-shadow:var(--shadow);
+    padding:18px;max-width:460px;width:100%
+  }
+  .qrbox{
+    display:grid;place-items:center;background:#fff;
+    border:1px solid var(--line);border-radius:12px;
+    padding:16px;margin:10px 0
+  }
+  .scanline{
+    height:2px;background:linear-gradient(90deg,transparent,#0e7bd6,transparent);
+    width:92%;animation:scan 1.8s linear infinite
+  }
+  @keyframes scan{0%{transform:translateY(-60px)}100%{transform:translateY(60px)}}
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand"><div class="logo">AB</div><div>Augsburger Bank</div></div>
+      <nav aria-label="Navigation">
+        <a class="active" href="#">Online-Banking</a>
+        <a href="#" aria-disabled="true">Produkte</a>
+        <a href="#" aria-disabled="true">Service</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <h1>Online-Banking</h1>
+      <p class="hint">
+        Gesicherte Übungsumgebung: fiktive Konten, keine echten Daten.
+        Deine IBAN und PIN stehen auf deinem Kärtchen.
+      </p>
+    </section>
+
+    <!-- LOGIN -->
+    <section id="view-login" class="card">
+      <div class="steps">
+        <div class="step active">1 · Login</div>
+        <div class="step">2 · Überweisung</div>
+        <div class="step">3 · Prüfen</div>
+        <div class="step">4 · TAN</div>
+      </div>
+      <div class="banner hint" style="margin-bottom:8px">
+        Trage die <strong>IBAN</strong> und die <strong>PIN</strong> ein, die auf deinem Kärtchen stehen.
+      </div>
+      <label for="ibanInput">Kontonummer / IBAN</label>
+      <input id="ibanInput" placeholder="z. B. DE12 7205 0000 0000 0000 01" autocomplete="off" />
+      <label for="pinInput">PIN</label>
+      <input id="pinInput" type="password" placeholder="z. B. 1001" autocomplete="off" />
+      <div class="row" style="margin-top:10px">
+        <button class="btn" onclick="doLogin()">Anmelden</button>
+        <button class="btn secondary" onclick="resetAll()">Zurücksetzen</button>
+      </div>
+      <div id="loginMsg" class="status err"></div>
+    </section>
+
+    <!-- TRANSFER FORM -->
+    <section id="view-transfer" class="card hide">
+      <div class="steps">
+        <div class="step">1 · Login</div>
+        <div class="step active">2 · Überweisung</div>
+        <div class="step">3 · Prüfen</div>
+        <div class="step">4 · TAN</div>
+      </div>
+      <div class="hint">
+        Fallbeispiel Maria: <em>„Kauf MacBook bei TechWorld GmbH“</em> ·
+        Betrag: <strong>1299,00 €</strong> · Empfänger-IBAN:
+        <code>DE12 7205 0000 0000 0001 99</code> (fiktiv)
+      </div>
+
+      <label for="recName">Empfänger (Name)</label>
+      <input id="recName" placeholder="z. B. TechWorld GmbH" />
+      <label for="recIban">IBAN Empfänger</label>
+      <input id="recIban" placeholder="z. B. DE12 7205 0000 0000 0001 99" />
+      <label for="amount">Betrag (€)</label>
+      <input id="amount" placeholder="z. B. 1299.00" />
+      <label for="purpose">Verwendungszweck</label>
+      <input id="purpose" placeholder="z. B. Rechnung MacBook Maria" />
+
+      <div class="row" style="margin-top:10px">
+        <button class="btn" onclick="goReview()">Weiter · Prüfen</button>
+        <button class="btn secondary" onclick="logout()">Abmelden</button>
+      </div>
+      <div id="transferMsg" class="status err"></div>
+    </section>
+
+    <!-- REVIEW -->
+    <section id="view-review" class="card hide">
+      <div class="steps">
+        <div class="step">1 · Login</div>
+        <div class="step">2 · Überweisung</div>
+        <div class="step active">3 · Prüfen</div>
+        <div class="step">4 · TAN</div>
+      </div>
+      <h3>Bitte überprüfe deine Angaben</h3>
+      <table class="table">
+        <tbody>
+          <tr><th>Empfänger</th><td id="outRec"></td></tr>
+          <tr><th>IBAN Empfänger</th><td id="outIban"></td></tr>
+          <tr><th>Betrag</th><td id="outAmt"></td></tr>
+          <tr><th>Verwendungszweck</th><td id="outPurp"></td></tr>
+        </tbody>
+      </table>
+      <p id="reviewHint" class="hint"></p>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" onclick="toTan()">Weiter · TAN</button>
+        <button class="btn secondary" onclick="backToTransfer()">Zurück</button>
+      </div>
+    </section>
+
+    <!-- TAN -->
+    <section id="view-tan" class="card hide">
+      <div class="steps">
+        <div class="step">1 · Login</div>
+        <div class="step">2 · Überweisung</div>
+        <div class="step">3 · Prüfen</div>
+        <div class="step active">4 · TAN</div>
+      </div>
+      <p class="hint">
+        Bestätige die Überweisung. In echt käme jetzt eine SMS-, Push- oder Foto-TAN.
+        In dieser Demo kannst du <strong>Push-TAN</strong> oder <strong>QR-/Foto-TAN</strong> simulieren.
+      </p>
+      <div class="row">
+        <button class="btn" onclick="simulatePush()">Push-TAN simulieren</button>
+        <button class="btn secondary" onclick="openQrTan()">QR-/Foto-TAN öffnen</button>
+      </div>
+      <label for="tanInput" style="margin-top:10px">TAN</label>
+      <input id="tanInput" placeholder="z. B. 01111" />
+      <div class="row" style="margin-top:10px">
+        <button class="btn" onclick="submitTransfer()">Überweisung ausführen</button>
+        <button class="btn secondary" onclick="logout()">Abmelden</button>
+      </div>
+      <div id="tanMsg" class="status err"></div>
+      <div id="result" class="status ok"></div>
+    </section>
+
+    <p class="hint" style="margin-top:10px">
+      © Augsburger Bank (fiktiv) · Lern-Demo · keine echten Daten
+    </p>
+  </div>
+
+  <!-- QR TAN Modal -->
+  <div id="qrModal" class="modal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="qrTitle">
+      <h3 id="qrTitle" style="margin:0 0 6px">QR-/Foto-TAN (Demo)</h3>
+      <p class="hint">Scanne den QR-Code (symbolisch) und klicke dann auf <strong>„Scannen“</strong>, um die TAN zu übernehmen.</p>
+      <div class="qrbox">
+        <div id="qrCanvas">
+          <svg width="260" height="260" viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg">
+            <rect width="260" height="260" fill="#fff"/>
+            <rect x="10" y="10" width="60" height="60" fill="#000"/>
+            <rect x="190" y="10" width="60" height="60" fill="#000"/>
+            <rect x="10" y="190" width="60" height="60" fill="#000"/>
+            <g id="qrDots"></g>
+          </svg>
+        </div>
+        <div class="scanline"></div>
+        <div class="center hint" id="qrTanText" style="margin-top:6px"></div>
+      </div>
+      <div class="row">
+        <button class="btn" onclick="scanQrTan()">Scannen</button>
+        <button class="btn secondary" onclick="closeQrTan()">Schließen</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // === 35 fiktive Konten der Augsburger Bank ===
+  const ACCOUNTS = [];
+  (function initAccounts(){
+    for(let i=1;i<=35;i++){
+      const suffix = String(i).padStart(2,'0');
+      const iban = `DE12 7205 0000 0000 0000 ${suffix}`; // fiktive DE-IBAN
+      const pin  = String(1000 + i);                     // 1001, 1002, ...
+      const tans = [`${suffix}111`, `${suffix}222`, `${suffix}333`];
+      ACCOUNTS.push({id:i, iban, pin, tans});
+    }
+  })();
+
+  let currentAccount = null;
+  let currentQrTan = null;
+
+  const qs   = id => document.getElementById(id);
+  const show = id => qs(id).classList.remove('hide');
+  const hide = id => qs(id).classList.add('hide');
+  const normIban = str => (str || '').replace(/\s+/g,'').toUpperCase();
+  function getValidTans(){ return currentAccount ? currentAccount.tans : []; }
+
+  function resetAll(){
+    show('view-login'); hide('view-transfer'); hide('view-review'); hide('view-tan');
+    qs('ibanInput').value = ''; qs('pinInput').value = '';
+    qs('loginMsg').textContent = ''; qs('transferMsg').textContent='';
+    qs('tanMsg').textContent=''; qs('result').textContent='';
+    qs('tanInput').value = ''; currentAccount = null; currentQrTan = null;
+  }
+
+  function doLogin(){
+    const ibanInput = (qs('ibanInput').value || '').trim();
+    const pinInput  = (qs('pinInput').value  || '').trim();
+    if(!ibanInput || !pinInput){
+      qs('loginMsg').textContent='Bitte IBAN und PIN eingeben.'; return;
+    }
+    const match = ACCOUNTS.find(acc => normIban(acc.iban) === normIban(ibanInput) && acc.pin === pinInput);
+    if(!match){
+      qs('loginMsg').textContent='Falsche Demo-Daten. Nutze die IBAN/PIN von deinem Kärtchen.'; return;
+    }
+    currentAccount = match;
+    qs('loginMsg').textContent='';
+    hide('view-login'); show('view-transfer');
+  }
+
+  function goReview(){
+    const rec  = (qs('recName').value||'').trim();
+    const rIban= (qs('recIban').value||'').trim();
+    const amt  = (qs('amount').value||'').trim();
+    const purp = (qs('purpose').value||'').trim();
+    if(!rec || !rIban || !amt){
+      qs('transferMsg').textContent='Bitte Empfänger, IBAN und Betrag ausfüllen.'; return;
+    }
+    qs('transferMsg').textContent='';
+    qs('outRec').textContent  = rec;
+    qs('outIban').textContent = rIban;
+    qs('outAmt').textContent  = amt + ' €';
+    qs('outPurp').textContent = purp || '-';
+    qs('reviewHint').textContent = rIban.startsWith('DE') ? '' : 'Hinweis: Deutsche IBANs beginnen mit DE.';
+    hide('view-transfer'); show('view-review');
+  }
+
+  function backToTransfer(){ hide('view-review'); show('view-transfer'); }
+  function toTan(){ hide('view-review'); show('view-tan'); }
+
+  function submitTransfer(){
+    const tan = (qs('tanInput').value||'').trim();
+    qs('tanMsg').textContent=''; qs('result').textContent='';
+    if(!tan){ qs('tanMsg').textContent='Bitte eine TAN eingeben.'; return; }
+    const valid = getValidTans();
+    if(!currentAccount || valid.length===0){
+      qs('tanMsg').textContent='Bitte zuerst korrekt einloggen (IBAN & PIN).'; return;
+    }
+    if(valid.includes(tan)){
+      qs('result').textContent='Überweisung erfolgreich (Demo).';
+    } else {
+      qs('tanMsg').textContent='Falsche TAN (Demo). Wende dich an die Lehrkraft.';
+    }
+  }
+
+  function logout(){
+    if(confirm('Abmelden und zurück zum Start?')) resetAll();
+  }
+
+  function simulatePush(){
+    const valid = getValidTans();
+    if(!currentAccount || valid.length===0){
+      alert('Bitte zuerst mit IBAN & PIN einloggen.'); return;
+    }
+    const code = valid[Math.floor(Math.random()*valid.length)];
+    alert('Push-TAN (Demo): Deine TAN lautet ' + code);
+  }
+
+  function openQrTan(){
+    const valid = getValidTans();
+    if(!currentAccount || valid.length===0){
+      alert('Bitte zuerst mit IBAN & PIN einloggen.'); return;
+    }
+    currentQrTan = valid[Math.floor(Math.random()*valid.length)];
+    qs('qrTanText').textContent = 'TAN (kodiert): •••••';
+    const g = document.querySelector('#qrDots');
+    if(g){
+      g.innerHTML='';
+      for(let i=0;i<120;i++){
+        const x = 10 + Math.floor(Math.random()*240);
+        const y = 10 + Math.floor(Math.random()*240);
+        const s = [4,6,8][Math.floor(Math.random()*3)];
+        if((x<70&&y<70)||(x>180&&y<70)||(x<70&&y>180)) continue;
+        g.innerHTML += `<rect x="${x}" y="${y}" width="${s}" height="${s}" fill="#000"/>`;
+      }
+    }
+    qs('qrModal').classList.add('show');
+  }
+
+  function scanQrTan(){
+    const valid = getValidTans();
+    if(!currentAccount || valid.length===0){
+      alert('Keine TAN verfügbar.'); return;
+    }
+    if(!currentQrTan){ currentQrTan = valid[0]; }
+    qs('tanInput').value = currentQrTan;
+    qs('qrTanText').textContent = 'TAN erkannt: ' + currentQrTan;
+  }
+
+  function closeQrTan(){
+    qs('qrModal').classList.remove('show');
+    currentQrTan = null;
+  }
+
+  resetAll();
+</script>
+</body>
+</html>
